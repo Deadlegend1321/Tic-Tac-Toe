@@ -52,7 +52,11 @@ public class TicTacToeGame {
         Game game = gameController.createGame(dimension, players);
 
         while (gameController.getGameStatus(game) == GameStatus.IN_PROGRESS){
+            //break;
+            System.out.println("Current Board");
+            gameController.displayBoard(game);
 
+            gameController.executeNextMove(game);
         }
 
         if(gameController.getGameStatus(game) == GameStatus.DRAW) {

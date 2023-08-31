@@ -1,6 +1,8 @@
 package Models;
 
 import Exceptions.InvalidGameDimensionException;
+import Strategy.GameWinningStrategy;
+import Strategy.OrderOneGameWinningStrategy;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +14,16 @@ public class Game {
     private GameStatus gameStatus;
     private int nexPlayerIndex;
     private Player winningPlayer;
+
+    public GameWinningStrategy gameWinningStrategy;
+
+    public GameWinningStrategy getGameWinningStrategy() {
+        return gameWinningStrategy;
+    }
+
+    public void setGameWinningStrategy(GameWinningStrategy gameWinningStrategy) {
+        this.gameWinningStrategy = gameWinningStrategy;
+    }
 
     public Player getWinningPlayer() {
         return winningPlayer;
@@ -65,6 +77,35 @@ public class Game {
         return new Builder();
     }
 
+    public void makeNextMove() {
+        Player playerWhosMoveItIs = players.get(nexPlayerIndex);
+        System.out.println("It is " + playerWhosMoveItIs.getName() + "'s turn");
+        Move move = playerWhosMoveItIs.decideMove(board);
+
+        int row = move.getCell().getRow();
+        int col = move.getCell().getCol();
+
+        if (board.getBoard().get(row).get(col).getCellState().equals(CellState.EMPTY)){
+            board.applyMove(move);
+            moves.add(move);
+
+            if(gameWinningStrategy.checkWinner(board, move)){
+                gameStatus = GameStatus.ENDED;
+                winningPlayer = playerWhosMoveItIs;
+            }
+
+            if (moves.size() == board.getSize() * board.getSize()){
+                gameStatus = GameStatus.DRAW;
+            }
+
+            nexPlayerIndex += 1;
+            nexPlayerIndex %= players.size();
+        }
+        else {
+
+        }
+    }
+
     public static class Builder{
         private int dimension;
         private List<Player> players;
@@ -91,6 +132,8 @@ public class Game {
             game.setPlayers(players);
             game.setMoves(new LinkedList<>());
             game.setNexPlayerIndex(0);
+            game.setGameStatus(GameStatus.IN_PROGRESS);
+            game.setGameWinningStrategy(new OrderOneGameWinningStrategy(dimension));
 
             return game;
         }
